@@ -27,6 +27,8 @@ struct DspParams
 
 struct DspChannel
 {
+    float emphasis[2] = {};     // used for emphasis filtering
+    float deemphasis[2] = {};   // used for deemphasis filtering
     float prefilter[4][2] = {}; // used for pre- low/high cut filtering
     Hiir<4, 1> halfband = {};   // used for bandlimiting to 1/4 when oversampling is off
     Hiir2<4> downsample = {};   // used when oversampling is on
@@ -36,8 +38,6 @@ struct DspChannel
     {
         struct
         {
-            float emphasis[2] = {};    // used for emphasis filtering
-            float deemphasis[2] = {};  // used for deemphasis filtering
             Hiir2<2> downsample4 = {}; // used for x4 downsampling
             Hiir2<2> upsample4 = {};   // used for x4 upsampling
             HarmonicGen<8, 1> harmonic = {};
@@ -135,6 +135,10 @@ struct DspEngine
         float wet_gain = 1.0f / channels;
         float dry_gain = params.gain1 * wet_gain;
 
+        // gain compensation for emphasis/de-emphasis
+        params.gain2 *= 0.707f;
+        params.gain3 *= 0.5f;
+
         for (int c = 0; c < channels; ++c)
         {
             float *x = data[c];
@@ -145,14 +149,15 @@ struct DspEngine
                 float dry = x[i];
                 float wet = x[i];
 
+                // high/low cut prefiltering
                 wet = coeffs_hicut.run(wet, channel.prefilter[0])[0];
                 wet = coeffs_hicut.run(wet, channel.prefilter[1])[0];
                 wet = coeffs_locut.run(wet, channel.prefilter[2])[1];
                 wet = coeffs_locut.run(wet, channel.prefilter[3])[1];
 
-                if (mode == DIRTY)
+                // pre-emphasis
                 {
-                    auto [lp, hp] = coeffs_emphasis.run(wet, channel.data.dirty.emphasis);
+                    auto [lp, hp] = coeffs_emphasis.run(wet, channel.emphasis);
                     wet = wet + lp - 0.5f * hp; // tilt shelf
                 }
 
@@ -169,9 +174,9 @@ struct DspEngine
                     wet = run_xsampled_path(wet, channel, params);
                 }
 
-                if (mode == DIRTY)
+                // de-emphasis
                 {
-                    auto [lp, hp] = coeffs_emphasis.run(wet, channel.data.dirty.deemphasis);
+                    auto [lp, hp] = coeffs_emphasis.run(wet, channel.deemphasis);
                     wet = wet - 0.5f * lp + hp; // inverse tilt shelf
                 }
 
@@ -228,8 +233,8 @@ private:
             {
                 auto result = channel.data.dirty.harmonic.run(z[i], HIIR16_84);
                 z[i] = result.sub2[0] * params.gain0 +
-                       result.oct2[0] * (params.gain2 * 0.707f) + // emphasis-deemphasis correction gain
-                       result.oct3[0] * (params.gain3 * 0.5f);
+                       result.oct2[0] * params.gain2 +
+                       result.oct3[0] * params.gain3;
             }
 
             return channel.data.dirty.downsample4.run_down(z[0], z[1], HIIR4_120);
