@@ -7,6 +7,7 @@ SucroseAudioProcessor::SucroseAudioProcessor() : apvts(*this, &undo_manager, "Pa
 {
 
 	init();
+	startTimer(100);
 
 	presets[0] = pluginpreset("Default", 0.f, .5f, 0.f, 0.f, 0.f, 1.f, 1);
 	presets[1] = pluginpreset("Glitchy", .5f, 0.f, 0.f, 0.f, 0.f, 1.f, 0);
@@ -17,7 +18,7 @@ SucroseAudioProcessor::SucroseAudioProcessor() : apvts(*this, &undo_manager, "Pa
 	presets[6] = pluginpreset("Doubling", .0f, .42f, .42f, .0f, .0f, 1.f, 1);
 	presets[7] = pluginpreset("Shift Down", .6f, .0f, .0f, .0f, .0f, 1.f, 2);
 	presets[8] = pluginpreset("Shift Up", .0f, .0f, .5f, .0f, .0f, 1.f, 2);
-	presets[9] = pluginpreset("Clarity", .0f, .5f, .6f, .67f, .23f, 1.f, 1);
+	presets[9] = pluginpreset("Clarity", .0f, .5f, .4f, .3f, .67f, 1.f, 1);
 
 	for (int i = 10; i < getNumPrograms(); i++)
 	{
@@ -26,7 +27,7 @@ SucroseAudioProcessor::SucroseAudioProcessor() : apvts(*this, &undo_manager, "Pa
 	}
 
 	params.pots[0] = potentiometer("subharmonix", "sub", .001f, presets[0].values[0]);
-	params.pots[1] = potentiometer("fundemental", "dry", .001f, presets[0].values[1]);
+	params.pots[1] = potentiometer("fundamental", "dry", .001f, presets[0].values[1]);
 	params.pots[2] = potentiometer("2nd harmonix", "second", .001f, presets[0].values[2]);
 	params.pots[3] = potentiometer("3rd harmonix", "third", .001f, presets[0].values[3]);
 	params.pots[4] = potentiometer("low cut", "lc", 0.f, presets[0].values[4]);
@@ -45,6 +46,7 @@ SucroseAudioProcessor::SucroseAudioProcessor() : apvts(*this, &undo_manager, "Pa
 
 SucroseAudioProcessor::~SucroseAudioProcessor()
 {
+	stopTimer();
 	close();
 }
 
@@ -61,14 +63,25 @@ void SucroseAudioProcessor::setCurrentProgram(int index)
 	if (currentpreset == index)
 		return;
 
-	undo_manager.beginNewTransaction((String) "Changed preset to " += presets[index].name);
 	currentpreset = index;
+	updatepreset = true;
+}
 
-	for (int i = 0; i < paramcount; i++)
+void SucroseAudioProcessor::timerCallback()
+{
+	// who knows why it doesnt work without it, but here we are...
+	// juce sure works in mysterious ways
+	if (updatepreset)
 	{
-		apvts.getParameter(params.pots[i].id)->setValueNotifyingHost(params.pots[i].normalize(presets[currentpreset].values[i]));
+		updatepreset = false;
+		undo_manager.beginNewTransaction((String) "Changed preset to " += presets[currentpreset].name);
+		for (int i = 0; i < paramcount; i++)
+		{
+			apvts.getParameter(params.pots[i].id)->setValueNotifyingHost(params.pots[i].normalize(presets[currentpreset].values[i]));
+		}
 	}
 }
+
 const String SucroseAudioProcessor::getProgramName(int index)
 {
 	return {presets[index].name};

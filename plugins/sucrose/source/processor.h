@@ -62,7 +62,7 @@ struct pluginpreset
 	}
 };
 
-class SucroseAudioProcessor : public plugmachine_dsp
+class SucroseAudioProcessor : public plugmachine_dsp, public Timer
 {
 public:
 	SucroseAudioProcessor();
@@ -86,6 +86,8 @@ public:
 	bool producesMidi() const override;
 	bool isMidiEffect() const override;
 	double getTailLengthSeconds() const override;
+
+	void timerCallback() override;
 
 	int getNumPrograms() override;
 	int getCurrentProgram() override;
@@ -111,6 +113,7 @@ public:
 	pluginpreset state;
 	pluginparams params;
 	int currentpreset = 0;
+	bool updatepreset = false;
 
 private:
 	pluginpreset presets[20];
