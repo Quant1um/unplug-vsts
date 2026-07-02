@@ -361,7 +361,7 @@ AudioProcessorValueTreeState::ParameterLayout SucroseAudioProcessor::create_para
 {
 	std::vector<std::unique_ptr<RangedAudioParameter>> parameters;
 	parameters.push_back(std::make_unique<AudioParameterFloat>(ParameterID{"sub", 1}, "subharmonix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.0f, AudioParameterFloatAttributes().withStringFromValueFunction(stodb).withValueFromStringFunction(sfromdb)));
-	parameters.push_back(std::make_unique<AudioParameterFloat>(ParameterID{"dry", 1}, "fundemental", juce::NormalisableRange<float>(0.0f, 1.0f), 0.5f, AudioParameterFloatAttributes().withStringFromValueFunction(stodb).withValueFromStringFunction(sfromdb)));
+	parameters.push_back(std::make_unique<AudioParameterFloat>(ParameterID{"dry", 1}, "fundamental", juce::NormalisableRange<float>(0.0f, 1.0f), 0.5f, AudioParameterFloatAttributes().withStringFromValueFunction(stodb).withValueFromStringFunction(sfromdb)));
 	parameters.push_back(std::make_unique<AudioParameterFloat>(ParameterID{"second", 1}, "2nd harmonix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.0f, AudioParameterFloatAttributes().withStringFromValueFunction(stodb).withValueFromStringFunction(sfromdb)));
 	parameters.push_back(std::make_unique<AudioParameterFloat>(ParameterID{"third", 1}, "3rd harmonix", juce::NormalisableRange<float>(0.0f, 1.0f), 0.0f, AudioParameterFloatAttributes().withStringFromValueFunction(stodb).withValueFromStringFunction(sfromdb)));
 	parameters.push_back(std::make_unique<AudioParameterFloat>(ParameterID{"lc", 1}, "low cut", juce::NormalisableRange<float>(0.0f, 1.0f), 0.0f, AudioParameterFloatAttributes().withStringFromValueFunction(stolc).withValueFromStringFunction(sfromlc)));

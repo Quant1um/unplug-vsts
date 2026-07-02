@@ -211,18 +211,18 @@ static std::function<float(const String &s)> sfromdb = [](const String &s)
 static std::function<String(int v, int max)> toalgo = [](int v, int max)
 {
 	if (v == 0)
-		return "dirty";
+		return "heart";
 	if (v == 1)
-		return "clean4";
-	return "clean16";
+		return "spiral";
+	return "star";
 };
 static std::function<int(const String &s)> fromalgo = [](const String &s)
 {
-	if (s.containsIgnoreCase("d"))
+	if (s.containsIgnoreCase("h"))
 		return 0;
-	if (s.containsIgnoreCase("4"))
+	if (s.containsIgnoreCase("sp"))
 		return 1;
-	if (s.containsIgnoreCase("1"))
+	if (s.containsIgnoreCase("st"))
 		return 2;
 	return 1;
 };
