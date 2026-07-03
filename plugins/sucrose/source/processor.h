@@ -62,7 +62,7 @@ struct pluginpreset
 	}
 };
 
-class SucroseAudioProcessor : public plugmachine_dsp
+class SucroseAudioProcessor : public plugmachine_dsp, public Timer
 {
 public:
 	SucroseAudioProcessor();
@@ -86,6 +86,8 @@ public:
 	bool producesMidi() const override;
 	bool isMidiEffect() const override;
 	double getTailLengthSeconds() const override;
+
+	void timerCallback() override;
 
 	int getNumPrograms() override;
 	int getCurrentProgram() override;
@@ -111,6 +113,7 @@ public:
 	pluginpreset state;
 	pluginparams params;
 	int currentpreset = 0;
+	bool updatepreset = false;
 
 private:
 	pluginpreset presets[20];
@@ -208,18 +211,18 @@ static std::function<float(const String &s)> sfromdb = [](const String &s)
 static std::function<String(int v, int max)> toalgo = [](int v, int max)
 {
 	if (v == 0)
-		return "dirty";
+		return "heart";
 	if (v == 1)
-		return "clean4";
-	return "clean16";
+		return "spiral";
+	return "star";
 };
 static std::function<int(const String &s)> fromalgo = [](const String &s)
 {
-	if (s.containsIgnoreCase("d"))
+	if (s.containsIgnoreCase("h"))
 		return 0;
-	if (s.containsIgnoreCase("4"))
+	if (s.containsIgnoreCase("sp"))
 		return 1;
-	if (s.containsIgnoreCase("1"))
+	if (s.containsIgnoreCase("st"))
 		return 2;
 	return 1;
 };
