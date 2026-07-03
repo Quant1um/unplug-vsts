@@ -25,8 +25,6 @@ juce_add_plugin("${BaseTargetName}"
 
 set_target_properties("${BaseTargetName}" PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
 target_compile_features("${BaseTargetName}" PRIVATE cxx_std_17)
-add_compile_definitions(BANNER)
-add_compile_definitions(BETA)
 
 clap_juce_extensions_plugin(TARGET "${BaseTargetName}"
 	CLAP_ID "com.unplugred.${BaseTargetName}"
