@@ -141,8 +141,7 @@ plugins = [{
 },{
 	"name": "Sucrose",
 	"code": "Scrs",
-	"paid": False,
-	"in_bundle": False
+	"paid": False
 }]
 for i in range(len(plugins)):
 	if "standalone" not in plugins[i]:
