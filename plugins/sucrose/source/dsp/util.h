@@ -7,17 +7,33 @@
 #endif
 
 /// @brief Multi-channel mid-side encoder/decoder, in-place.
-/// Turns N channels into 1 mid and N-1 side channels, each side channel is `mid - 2 * channel`.
+/// Turns N channels into 1 mid and N-1 side channels, each side channel is `mid - N * channel`.
 /// Inverse of itself (up to gain of N).
+template <bool encode>
 inline void mid_side(float *const *x, int offset, int samples, int channels)
 {
-    for (int c = 1; c < channels; ++c)
-        for (int i = offset; i < offset + samples; ++i)
-            x[0][i] += x[c][i];
+    if (encode)
+    {
+        for (int c = 1; c < channels; ++c)
+            for (int i = offset; i < offset + samples; ++i)
+                x[0][i] += x[c][i];
 
-    for (int c = 1; c < channels; ++c)
-        for (int i = offset; i < offset + samples; ++i)
-            x[c][i] = x[0][i] - x[c][i] - x[c][i];
+        for (int c = 1; c < channels; ++c)
+            for (int i = offset; i < offset + samples; ++i)
+                x[c][i] = x[0][i] - x[c][i] * (float)channels;
+    }
+    else
+    {
+        float inv_channels = 1.0f / (float)channels;
+
+        for (int c = 1; c < channels; ++c)
+            for (int i = offset; i < offset + samples; ++i)
+                x[c][i] = (x[0][i] - x[c][i]) * inv_channels;
+
+        for (int c = 1; c < channels; ++c)
+            for (int i = offset; i < offset + samples; ++i)
+                x[0][i] -= x[c][i];
+    }
 }
 
 /// @brief In-place fade-in of a buffer, with a given ramp and gain state.

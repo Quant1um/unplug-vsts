@@ -130,10 +130,7 @@ struct DspEngine
             coeffs_locut = SVF<float>(locut_freq / sample_rate, 0.7071f);
         }
 
-        mid_side(data, offset, samples, channels);
-
-        float wet_gain = 1.0f / channels;
-        float dry_gain = params.gain1 * wet_gain;
+        mid_side<true>(data, offset, samples, channels);
 
         // gain compensation for emphasis/de-emphasis
         params.gain2 *= 0.707f;
@@ -180,11 +177,11 @@ struct DspEngine
                     wet = wet - 0.5f * lp + hp; // inverse tilt shelf
                 }
 
-                x[i] = wet * wet_gain + dry * dry_gain;
+                x[i] = wet + dry * params.gain1;
             }
         }
 
-        mid_side(data, offset, samples, channels);
+        mid_side<false>(data, offset, samples, channels);
 
         // click-less mode change
         if (fadeout_gain < 1.0f || mode != params.mode)
