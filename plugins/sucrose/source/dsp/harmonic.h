@@ -14,7 +14,6 @@ struct PhaseLocked
     {
         const auto freq_beta = 0.0625f / (3.14159265358979323846f); // frequency adjustment factor
         const auto phase_beta = 0.25f / (3.14159265358979323846f);  // phase adjustment factor
-        const auto sync_beta = 0.05f;                               // inter-band sync adjustment factor
 
         // current oscillator output
         auto [cx, cy] = approx_sin_cos_tau(phase - 0.5f);
@@ -62,10 +61,9 @@ struct HarmonicGen
         auto p = r * mag_inv; // this is the phase signal as a sine wave bounded by -1..1
         auto q = i * mag_inv; // H(p), the quadrature signal
         auto p2 = p * p;      // p^2
-        auto q2 = q * q;      // q^2
 
         // double the frequency, keep the magnitude
-        auto oct2 = q2 * 2.0f * mag - mag;
+        auto oct2 = p2 * 2.0f * mag - mag;
         // triple the frequency, keep the magnitude
         auto oct3 = (p2 * 4.0f - 3.0f) * p * mag;
         // suboctave is tracked by using N parallel phase-locked loops
